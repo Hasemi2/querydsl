@@ -1,9 +1,9 @@
 package com.practice.querydsl;
 
+import static com.practice.querydsl.domain.QMember.member;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.practice.querydsl.domain.Member;
-import com.practice.querydsl.domain.QMember;
 import com.practice.querydsl.domain.Team;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -52,7 +52,6 @@ public class QuerydslBasicTest {
   @Test
   public void startQueryDSL() {
     JPAQueryFactory queryFactory = new JPAQueryFactory(em);
-    QMember member = new QMember("m");
 
     Member member1 = queryFactory
         .select(member)
