@@ -5,9 +5,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.practice.querydsl.domain.Member;
 import com.practice.querydsl.domain.Team;
+import com.querydsl.core.QueryResults;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +22,12 @@ public class QuerydslBasicTest {
   @Autowired
   EntityManager em;
 
+  JPAQueryFactory queryFactory;
+
   @BeforeEach
   public void before() {
+    queryFactory = new JPAQueryFactory(em);
+
     Team teamA = new Team("teamA");
     Team teamB = new Team("teamB");
 
@@ -41,7 +47,8 @@ public class QuerydslBasicTest {
 
   @Test
   public void startJPQL() {
-   Member member = em.createQuery("select m from Member m where m.username = :username", Member.class)
+    Member member = em.createQuery("select m from Member m where m.username = :username",
+            Member.class)
         .setParameter("username", "member1")
         .getSingleResult();
 
@@ -60,5 +67,46 @@ public class QuerydslBasicTest {
         .fetchOne();
 
     assertThat(member1.getUsername()).isEqualTo("member1");
+  }
+
+  @Test
+  public void search() {
+    Member member1 = queryFactory
+        .selectFrom(member)
+        .where(member.username.eq("member1")
+            .and(member.age.eq(10))
+        ).fetchOne();
+
+    assertThat(member1.getUsername()).isEqualTo("member1");
+  }
+
+  @Test
+  public void searchAndParam() {
+    Member member1 = queryFactory
+        .selectFrom(member)
+        .where(member.username.eq("member1")
+            , (member.age.eq(10))
+        ).fetchOne();
+
+    assertThat(member1.getUsername()).isEqualTo("member1");
+  }
+
+  @Test
+  public void resultFetch() {
+    List<Member> member1 = queryFactory
+        .selectFrom(member)
+        .fetch();
+
+    Member fetchFirst = queryFactory
+        .selectFrom(member)
+        .fetchFirst();
+
+    QueryResults<Member> memberQueryResults = queryFactory
+        .selectFrom(member)
+        .fetchResults();
+
+    memberQueryResults.getTotal();
+    List<Member> content = memberQueryResults.getResults();
+
   }
 }
